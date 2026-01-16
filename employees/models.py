@@ -79,21 +79,21 @@ class Employee(Geographical, AbstractUser):
     username = None
     email = models.EmailField(_("email address"), unique=True)
     middle_name = models.CharField(max_length=32, null=True, blank=True)
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(null=True, blank=True)
     sin = models.CharField("SIN", max_length=11, blank=True)
     sin_e = EncryptedCharField("SIN(e)", max_length=120, null=True)
-    date_hired = models.DateField(default=timezone.localdate)
+    date_hired = models.DateField(default=timezone.localdate, null=True, blank=True)
     date_released = models.DateField(null=True, blank=True)
 
-    address = models.CharField("Address line 1", max_length=128)
-    address2 = models.CharField("Address line 2", max_length=128, blank=True)
+    address = models.CharField("Address line 1", max_length=128, null=True, blank=True)
+    address2 = models.CharField("Address line 2", max_length=128, null=True, blank=True)
     city = models.ForeignKey(City, models.PROTECT, default=City.HALIFAX_ID)
-    postal_code = models.CharField(max_length=7)
-    phone_number = models.CharField(max_length=12)
+    postal_code = models.CharField(max_length=7, null=True, blank=True)
+    phone_number = models.CharField(max_length=12, null=True, blank=True)
     extra_phone_number = models.CharField(max_length=12, null=True, blank=True)
-
-    emergency_phone_number = models.CharField(max_length=12, blank=True)
-    emergency_contact_name = models.CharField(max_length=64, blank=True)
+    status = models.ForeignKey(Status, models.PROTECT, default=Status.FULLTIME_ID)
+    emergency_phone_number = models.CharField(max_length=12, null=True, blank=True)
+    emergency_contact_name = models.CharField(max_length=64, null=True, blank=True)
     emergency_relationship = models.ForeignKey(
         Relationship, models.PROTECT, verbose_name="Relationship", null=True, blank=True
     )
@@ -144,7 +144,6 @@ class Employee(Geographical, AbstractUser):
         # Employees with a release date should be set to inactive.
         if self.date_released is not None:
             self.status_id = Status.INACTIVE_ID
-            self.is_active = False
 
         if self.geography_id is None:
             self.geography = Geography.objects.get(
@@ -154,7 +153,7 @@ class Employee(Geographical, AbstractUser):
         super().save(*args, **kwargs)
 
     def full_name(self):
-        return "%s, %s" % (self.first_name, self.given_name)
+        return "%s, %s" % (self.first_name, self.last_name)
 
     full_name.short_description = "name"
     full_name.admin_order_field = "surname"

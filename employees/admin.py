@@ -1,68 +1,148 @@
+# -*- coding: utf-8 -*-
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 
-from .forms import EmployeeCreationForm, EmployeeChangeForm
-from .models import Status, Employee
+from .models import Status, Geography, Employee
 
 
-class ActiveEmployeeFilter(admin.SimpleListFilter):
-    title = "Active employee"
-    parameter_name = "active_employee"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("yes", "Active"),
-            ("no", "Inactive"),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == "yes":
-            return queryset.filter(status_id__in=Status.ACTIVE_IDS)
-        if self.value() == "no":
-            return queryset.exclude(status_id__in=Status.ACTIVE_IDS)
-        return queryset
+@admin.register(Status)
+class StatusAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    search_fields = ("name",)
 
 
-class EmployeeAdmin(UserAdmin):
-    add_form = EmployeeCreationForm
-    form = EmployeeChangeForm
-    model = Employee
+@admin.register(Geography)
+class GeographyAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "timezone")
+    search_fields = ("name",)
+
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+    # Minimal list display - just what you need to identify and browse employees
     list_display = (
         "email",
-        "is_staff",
+        "first_name",
+        "last_name",
+        "status",
+        "date_hired",
         "is_active",
     )
+
     list_filter = (
-        "email",
+        "status",
+        "geography",
         "is_staff",
-        ActiveEmployeeFilter,
+        "is_superuser",
+        "date_hired",
     )
+
+    search_fields = (
+        "first_name",
+        "last_name",
+        "email",
+        "sin",
+        "phone_number",
+    )
+
+    # Organize fields into logical sections in the detail view
     fieldsets = (
-        (None, {"fields": ("email", "is_active", "password")}),
         (
-            "Permissions",
-            {"fields": ("is_staff", "groups", "user_permissions")},
-        ),
-    )
-    add_fieldsets = (
-        (
-            None,
+            "Personal Information",
             {
-                "classes": ("wide",),
                 "fields": (
+                    "first_name",
+                    "middle_name",
+                    "last_name",
+                    "date_of_birth",
                     "email",
-                    "password1",
-                    "password2",
-                    "is_staff",
-                    "is_active",
-                    "groups",
-                    "user_permissions",
+                )
+            },
+        ),
+        (
+            "Contact Information",
+            {
+                "fields": (
+                    "phone_number",
+                    "extra_phone_number",
+                    "address",
+                    "address2",
+                    "city",
+                    "postal_code",
+                    "geography",
+                )
+            },
+        ),
+        (
+            "Emergency Contact",
+            {
+                "fields": (
+                    "emergency_contact_name",
+                    "emergency_relationship",
+                    "emergency_phone_number",
                 ),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "Employment Information",
+            {
+                "fields": (
+                    "status",
+                    "date_hired",
+                    "date_released",
+                    "salary",
+                    "weekly_hours",
+                )
+            },
+        ),
+        (
+            "Tax & Identification",
+            {
+                "fields": (
+                    "sin",
+                    "sin_e",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "Security Licenses",
+            {
+                "fields": (
+                    "iss_iat_id",
+                    "mss_id",
+                    "iss_security_license_number",
+                    "iat_security_license_number",
+                    "mss_security_license_number",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "System Information",
+            {
+                "fields": (
+                    "is_staff",
+                    "is_superuser",
+                    "last_login",
+                    "date_joined",
+                    "password",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "Additional Information",
+            {
+                "fields": (
+                    "color",
+                    "notes",
+                ),
+                "classes": ("collapse",),
             },
         ),
     )
-    search_fields = ("email",)
-    ordering = ("email",)
 
+    raw_id_fields = ("geography", "city", "status", "emergency_relationship")
 
-admin.site.register(Employee, EmployeeAdmin)
+    ordering = ("-date_hired",)

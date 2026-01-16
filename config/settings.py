@@ -26,8 +26,8 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 SECRET_KEY = env("SECRET_KEY")
 SALT_KEY = env("SALT_KEY")
 AUTH_USER_MODEL = "employees.Employee"
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "misc.apps.MiscConfig",
     "employees.apps.EmployeesConfig",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
